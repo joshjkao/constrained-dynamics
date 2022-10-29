@@ -30,7 +30,7 @@ To accomplish this goal, I used two different types of simulations:
     This approach is best explained by the following material: [3] https://www.cs.cmu.edu/~baraff/sigcourse/slidesf.pdf
     Instead of viewing the system in terms of generalized coordinates, this approach involves generalizing the problem even more. The double pendulum (or 
     any pendulum system) can be taken as a chain of point masses subject to a series of constraints. In order to extrapolate their motion, we can simply 
-    apply all external forces (in this case only gravity) and then calculate the magnitude of each "constraint force" that is needed to satusfy each 
+    apply all external forces (in this case only gravity) and then calculate the magnitude of each "constraint force" that is needed to satisfy each 
     constraint. In practice, each constraint takes the form of an equation that equals zero when it is satisfied. When there are multiple constraints and
     thus multiple constraint equations (such as our double or triple pendulum), they are combined into one large matrix equation so all constraint forces 
     can be satisfied at the same time. This involves taking the first and second time derivatives of the constraint matrix equation, and the use of 
