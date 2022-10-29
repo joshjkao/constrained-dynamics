@@ -1,7 +1,14 @@
 # constraineddynamics
 
-This program was developed as part of a project for Physics 304: Mechanics and is written in C++ using SDL2
+General Overview:
+This is a simple physics engine I wrote as part of a project for Physics 304: Mechanics using C++ and SDL2. While its original purpose is to simulate 
+pendulums, I also plan on fleshing out the engine more so it can be reused in future games or academic projects. The current version supports several
+force generators: gravity, springs, and gravitation attraction (like planets); as well as equality constraints (constraining a mass to any parametrizeable
+path). In the future, I plan on adding more types of constraints as well as optimizing the code before adding support for rotational inertia and bodies 
+that are not point masses.
 
+
+Project Description:
 For this project, I decided to analyze and visualize chaos in deterministic physical systems, particularly multiple pendulum systems. While the motion of a
 single simple pendulum consisting of a point mass constrained to rotate around a point is regular and can be easily described with one equation, attaching 
 more pendulums in a chain causes chaos to arise. That is, even small differences in initial conditions will eventually cause two closely related systems to 
