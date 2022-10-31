@@ -77,6 +77,10 @@ void System::addConstraint(Constraint* constr) {
     constraints.push_back(constr);
 }
 
+void System::addForceGenerator(ForceGenerator* gen) {
+    generators.push_back(gen);
+}
+
 void System::clearForces() {
     for (auto& o: objects) {
         o->F *= 0;
@@ -117,7 +121,7 @@ void System::updateState() {
 }
 
 void System::calculateJacobian() {
-    // if (constraints.size() == 0) return;
+    if (constraints.size() == 0) return;
     updateState();
     J = Matrix(constraints.size(), n*2);
     Jdot = Matrix(constraints.size(), n*2);
@@ -136,16 +140,8 @@ void System::calculateJacobian() {
 void System::applyConstraintForces() {
     // if (constraints.size() == 0) return;
     calculateJacobian();
-    // Matrix LHS = J*Minv*JT;
-    
-    // std::vector<double> RHS = (Jdot*Qdot)*-1 - J*Minv*Fext;
-
-    // std::cout << LHS;
-
-    // std::vector<double> lambda = LHS.gaussElim(RHS);
 
     Qddot = Minv*(Fext + (JT*((J*Minv*JT).gaussElim((Jdot*Qdot)*-1 - J*Minv*Fext))));
-    // std::cout << Qddot << std::endl;
     int ind = 0;
     for (int i = 0; i < n; i++) {
         objects[i]->acc.x = Qddot[ind++];
@@ -174,4 +170,8 @@ void System::cleanup() {
         delete g;
     }
     generators.clear();
+    for (auto& c: constraints) {
+        delete c;
+    }
+    constraints.clear();
 }

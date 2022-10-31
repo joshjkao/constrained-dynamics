@@ -50,57 +50,65 @@ bool App::init(const char* title, int xpos, int ypos, int width, int height, boo
     std::cout << "Renderer created" << std::endl;
     isRunning = true;
 
-    Lpendulum = new LagrangianDoublePendulum();
+    // Lpendulum = new LagrangianDoublePendulum();
 
-    // Test Code
+    // Sample Simulation: 
+    // "The dependendence on initial conditions [of the double pendulum] was so sensitive that the gravitational pull
+    // of a single raindrop a mile away mixed up the motion within two minutes"
+    //          -from James Gleick in "Chaos: Making a New Science"
     system = new System();
     origin = new ImmovableObject();
     origin->pos = Vector2d(5,1);
     origin->mass = 0.1;
 
-    Object* object2 = new Object();
-    object2->pos = Vector2d(4,1);
-    object2->vel = Vector2d(0,0);
-    object2->mass = 0.5;
-    system->addObject(object2);
-    
+    Object* pend1m1 = new Object();
+    pend1m1->pos = Vector2d(4,1);
+    pend1m1->mass = 0.5;
+    system->addObject(pend1m1);
 
-    Object* object3 = new Object();
-    object3->pos = Vector2d(3,1);
-    object3->mass = 0.5;
-    system->addObject(object3);
+    Object* pend1m2 = new Object();
+    pend1m2->pos = Vector2d(3,1);
+    pend1m2->mass = 0.5;
+    system->addObject(pend1m2);
 
-    Object* object4 = new Object();
-    object4->pos = Vector2d(2,1);
-    object4->mass = 0.5;
-    system->addObject(object4);
-
-    Constraint* distconstraint1 = new DistanceConstraintFixed(object2, origin->pos);
-    Constraint* distconstraint2 = new DistanceConstraint(object2, object3);
-    Constraint* distconstraint3 = new DistanceConstraint(object4, object3);
+    Constraint* distconstraint1 = new DistanceConstraintFixed(pend1m1, origin->pos);
+    Constraint* distconstraint2 = new DistanceConstraint(pend1m1, pend1m2);
     system->addConstraint(distconstraint1);
     system->addConstraint(distconstraint2);
+
+    Object* pend2m1 = new Object();
+    pend2m1->pos = Vector2d(4,1);
+    pend2m1->mass = 0.5;
+    system->addObject(pend2m1);
+
+    Object* pend2m2 = new Object();
+    pend2m2->pos = Vector2d(3,1);
+    pend2m2->mass = 0.5;
+    system->addObject(pend2m2);
+
+    Constraint* distconstraint3 = new DistanceConstraintFixed(pend2m1, origin->pos);
+    Constraint* distconstraint4 = new DistanceConstraint(pend2m1, pend2m2);
     system->addConstraint(distconstraint3);
+    system->addConstraint(distconstraint4);
+
+    // A single raindrop, a mile away, to pull on the second pendulum
+    Object* raindrop = new ImmovableObject();
+    raindrop->mass = 0.000034;
+    raindrop->pos = Vector2d(1609,1);
+    system->addObject(raindrop);
+
+    ForceGenerator* grav1 = new GravAttract(raindrop, pend2m1);
+    ForceGenerator* grav2 = new GravAttract(raindrop, pend2m2);
+    system->addForceGenerator(grav1);
+    system->addForceGenerator(grav2);
 
     for (auto& o: system->objects) {
         ForceGenerator* grav = new Gravity(o);
         system->generators.push_back(grav);
     }
 
-    // ForceGenerator* s12 = new Spring(object1, object2, 500, 200);
-    // ForceGenerator* s23 = new Spring(object2, object3, 1000, 2);
-
-    // ForceGenerator* s12 = new ConstRadiusFixedPivot(control, origin);
-    // ForceGenerator* s23 = new ConstRadius(object3, object2);
-    // ForceGenerator* s32 = new ConstRadius(object2, object3);
-
-    // system->generators.push_back(s34);
-    // system->generators.push_back(s23);
-    // system->generators.push_back(s32);
-    // system->generators.push_back(s12);
-
     solver = new EulerSolver();
-    solver->start(system, 0.0001/5);
+    solver->start(system, 1.0/30000);
 
     system->dump(std::cout);
 
@@ -143,7 +151,7 @@ void App::update() {
         step();
     }
 
-    std::cout << system->calculateEnergy() << std::endl;
+    // std::cout << system->calculateEnergy() << std::endl;
 }
 
 void App::step() {
@@ -164,13 +172,17 @@ void App::step() {
     // Step forward using new system state
     solver->iterate(system);
 
-    Lpendulum->update();
+    if (Lpendulum != nullptr) {
+        Lpendulum->update();
+    }
 }
 
 void App::render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    if (Lpendulum != nullptr) Lpendulum->render(renderer);
+    if (Lpendulum != nullptr) {
+        Lpendulum->render(renderer);
+    }
     origin->render(renderer);
     system->render(renderer);
     SDL_RenderPresent(renderer);

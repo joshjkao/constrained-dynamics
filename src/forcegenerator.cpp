@@ -21,7 +21,7 @@ GravAttract::~GravAttract() {
 
 void GravAttract::update() {
     Vector2d AtoB(B->pos.x - A->pos.x, B->pos.y - A->pos.y);
-    AtoB = AtoB * B->mass * A->mass / 100;
+    AtoB = 6.67 * pow(10,-11) * AtoB * B->mass * A->mass / 100;
     A->applyForce(AtoB);
     Vector2d BtoA = AtoB * -1;
     B->applyForce(BtoA);

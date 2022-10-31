@@ -27,6 +27,7 @@ int main() {
 
         // Frame rate limiter
         frameTime = SDL_GetTicks() - frameStart;
+        // std::cout << frameDelay - frameTime << std::endl;
         if (frameDelay > frameTime) {
             SDL_Delay(frameDelay-frameTime);
         }

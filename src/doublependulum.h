@@ -28,7 +28,7 @@ class LagrangianDoublePendulum {
         double m1=0.5;
         double m2=0.5;
 
-        double dt = .0001/5;
+        double dt = .0001/3;
         double g = 9.8;
 
     private:
