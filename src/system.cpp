@@ -128,17 +128,11 @@ void System::calculateJacobian() {
     for (unsigned int i = 0; i < constraints.size(); i++) {
         constraints[i]->addJacobian(J[i], Jdot[i]);
     }
-    // std::vector< std::vector<double> > j = {{Q[0]-5,Q[1]-1,0,0},
-    //                                         {Q[0]-Q[2],Q[1]-Q[3],Q[2]-Q[0],Q[3]-Q[1]}};
-    // J = Matrix(j);
-    // std::vector< std::vector<double> > jdot = {{Qdot[0],Qdot[1],0,0},
-    //                                            {Qdot[0]-Qdot[2],Qdot[1]-Qdot[3],Qdot[2]-Qdot[0],Qdot[3]-Qdot[1]}};
-    // Jdot = Matrix(jdot);
     JT = transpose(J);
 }
 
 void System::applyConstraintForces() {
-    // if (constraints.size() == 0) return;
+    if (constraints.size() == 0) return;
     calculateJacobian();
 
     Qddot = Minv*(Fext + (JT*((J*Minv*JT).gaussElim((Jdot*Qdot)*-1 - J*Minv*Fext))));
