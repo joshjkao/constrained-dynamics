@@ -15,6 +15,11 @@ class System {
         void addForceGenerator(ForceGenerator*);
         void addConstraint(Constraint*);
 
+        std::vector<double> getState(std::vector<Object*>&);
+        void clear(std::vector<Object*>&);
+        void setAngles(Object*, std::vector<Object*>&, double, double, double, double);
+        void setMassRatio(std::vector<Object*>&, double);
+
         void clearForces();
         void applyForce(Vector2d F_, Object* object);
         void render(SDL_Renderer*);

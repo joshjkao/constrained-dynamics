@@ -10,6 +10,25 @@ LagrangianDoublePendulum::~LagrangianDoublePendulum() {
 
 }
 
+void LagrangianDoublePendulum::setAngles(double t1, double t2) {
+    theta1 = t1 * M_PI/180;
+    theta2 = t2 * M_PI/180;
+}
+
+void LagrangianDoublePendulum::setMassRatio(double ratio) {
+    m1 = ratio*0.5;
+    m2 = 0.5;
+}
+
+void LagrangianDoublePendulum::clear() {
+    theta1 = 0;
+    theta1dot = 0;
+    theta1ddot = 0;
+    theta2 = 0;
+    theta2dot = 0;
+    theta2ddot = 0;
+}
+
 void LagrangianDoublePendulum::update() {
     theta1ddot=(-g*(2*m1+m2)*sin(theta1)-m2*g*sin(theta1-2*theta2)-2*sin(theta1-theta2)*m2*(r2*theta2dot*theta2dot+r1*cos(theta1-theta2)*theta1dot*theta1dot))/(r1*(2*m1+m2-m2*cos(2*theta1-2*theta2)));
     theta2ddot=(2*sin(theta1-theta2)*((m1+m2)*r1*theta1dot*theta1dot+g*(m1+m2)*cos(theta1)+r2*m2*cos(theta1-theta2)*theta2dot*theta2dot))/(r2*(2*m1+m2-m2*cos(2*theta1-2*theta2)));
@@ -43,4 +62,21 @@ void LagrangianDoublePendulum::updateVectors() {
     string1.y = pivot.y + r1*cos(theta1);
     string2.x = string1.x + r2*sin(theta2);
     string2.y = string1.y + r2*cos(theta2);
+}
+
+std::vector<double> LagrangianDoublePendulum::getState() {
+    std::vector<double> result;
+
+    result.push_back(m1);
+    result.push_back(string1.x);
+    result.push_back(r1 * cos(theta1) * theta1dot);
+    result.push_back(string1.y);
+    result.push_back(r1 * -1 * sin(theta1) * theta1dot);
+    result.push_back(m2);
+    result.push_back(string2.x);
+    result.push_back(r1 * cos(theta1) * theta1dot + r2 * theta2dot * cos(theta2));
+    result.push_back(string2.y);
+    result.push_back(r1 * -1 * sin(theta1) * theta1dot - r2 * theta2dot * sin(theta2));
+
+    return result;
 }

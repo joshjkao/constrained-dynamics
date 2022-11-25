@@ -3,11 +3,22 @@
 
 SDL_Renderer* App::renderer = nullptr;
 double App::dt = 0.01;
-LagrangianDoublePendulum* Lpendulum = nullptr;
+LagrangianDoublePendulum* Lpend1 = nullptr;
+LagrangianDoublePendulum* Lpend2 = nullptr;
+std::vector<Object*> Cpend1;
+std::vector<Object*> Cpend2;
+double d0 = -1;
+double dprev = 0;
+double lyapunovTot = 0;
+double lyapunovAvg = 0;
+int angle = 0;
+double massRatio = 0.01;
+long updates = 0;
 Vector2d testvec(0,0);
 Object* origin = nullptr;
-Object* control = nullptr;
-ForceGenerator* controlgrav = nullptr;
+
+int trials = 1;
+int totalTrials = 180;
 
 int mousex=0;
 int mousey=0;
@@ -50,12 +61,20 @@ bool App::init(const char* title, int xpos, int ypos, int width, int height, boo
     std::cout << "Renderer created" << std::endl;
     isRunning = true;
 
-    // Lpendulum = new LagrangianDoublePendulum();
+    avg = std::ofstream("averageexponents.csv");
+    curr = std::ofstream("output.csv");
+    avg << std::string("Mass Ratio , Average Lyapunov Exponent\n");
+    
+            /* Two Lagrangian Pendulum Setup */
 
-    // Sample Simulation: 
-    // "The dependendence on initial conditions [of the double pendulum] was so sensitive that the gravitational pull
-    // of a single raindrop a mile away mixed up the motion within two minutes"
-    //          -from James Gleick in "Chaos: Making a New Science"
+    // Lpend1 = new LagrangianDoublePendulum();
+    // Lpend2 = new LagrangianDoublePendulum();
+    // Lpend1->setAngles(90, 90);
+    // Lpend1->setMassRatio(1);
+    // Lpend2->setAngles(90 + 0.003, 90);
+    // Lpend2->setMassRatio(1);
+
+    // Constraint Pendulum 1
     system = new System();
     origin = new ImmovableObject();
     origin->pos = Vector2d(5,1);
@@ -75,7 +94,10 @@ bool App::init(const char* title, int xpos, int ypos, int width, int height, boo
     Constraint* distconstraint2 = new DistanceConstraint(pend1m1, pend1m2);
     system->addConstraint(distconstraint1);
     system->addConstraint(distconstraint2);
+    Cpend1.push_back(pend1m1);
+    Cpend1.push_back(pend1m2);
 
+    // Constraint Pendulum 2
     Object* pend2m1 = new Object();
     pend2m1->pos = Vector2d(4,1);
     pend2m1->mass = 0.5;
@@ -90,21 +112,17 @@ bool App::init(const char* title, int xpos, int ypos, int width, int height, boo
     Constraint* distconstraint4 = new DistanceConstraint(pend2m1, pend2m2);
     system->addConstraint(distconstraint3);
     system->addConstraint(distconstraint4);
+    Cpend2.push_back(pend2m1);
+    Cpend2.push_back(pend2m2);
 
-    // A single raindrop, a mile away, to pull on the second pendulum
-    Object* raindrop = new ImmovableObject();
-    raindrop->mass = 0.000034;
-    raindrop->pos = Vector2d(1609,1);
-    system->addObject(raindrop);
-
-    ForceGenerator* grav1 = new GravAttract(raindrop, pend2m1);
-    ForceGenerator* grav2 = new GravAttract(raindrop, pend2m2);
-    system->addForceGenerator(grav1);
-    system->addForceGenerator(grav2);
+    system->setAngles(origin, Cpend1, 0, 0, 1, 1);
+    // system->setMassRatio(Cpend1, 1);
+    system->setAngles(origin, Cpend2, .003, 0, 1, 1);
+    // system->setMassRatio(Cpend2, 1);
 
     for (auto& o: system->objects) {
         ForceGenerator* grav = new Gravity(o);
-        system->generators.push_back(grav);
+        system->addForceGenerator(grav);
     }
 
     solver = new EulerSolver();
@@ -147,11 +165,61 @@ void App::handleEvents() {
 
 void App::update() {
     if (isPaused) return;
-    for (int i = 0; i < iterationsPerFrame; i++) {
+    for (int i = 0; i < iterationsPerFrame; ++i) {
         step();
+        if (i%250 == 0) {
+            calculateLE();
+        }
+    }
+    if (updates == 3200) {
+        if (trials >= totalTrials) {
+            isPaused = true;
+            std::cout << "DONE" << std::endl;
+            isRunning = false;
+        }
+        else {
+            angle += 1;
+            std::cout << "Testing case " << angle << std::endl;
+            avg << angle << ", " << lyapunovAvg << "\n";
+            system->clear(Cpend1);
+            system->setAngles(origin, Cpend1, angle, 0, 1,1);
+            // Lpend1->setMassRatio(massRatio);
+            system->clear(Cpend2);
+            system->setAngles(origin, Cpend2, angle+0.003, 0, 1,1);
+            // Lpend2->setMassRatio(massRatio + 0.1);
+            d0 = -1;
+            dprev = 0;
+            lyapunovTot = 0;
+            lyapunovAvg = 0;
+            updates = 0;
+            ++trials;
+        }
     }
 
     // std::cout << system->calculateEnergy() << std::endl;
+}
+
+void App::calculateLE() {
+    std::vector<double> state1 = system->getState(Cpend1);
+    std::vector<double> state2 = system->getState(Cpend2);
+    double temp = 0;
+    for (unsigned int i = 0; i < state1.size(); ++i) {
+        temp += pow(state1[i] - state2[i], 2);
+    }
+    temp = sqrt(temp);
+    if (d0 == -1) {
+        d0 = temp;
+        dprev = temp;
+        curr << "Iterations, Lyapunov Exponent\n";
+    }
+    ++updates;
+    double di = temp;
+    double lyapunovCurr = log(di/d0);
+    lyapunovTot += lyapunovCurr;
+    lyapunovAvg = lyapunovTot / (updates);
+    curr << updates << ", ";
+    curr << lyapunovCurr << "\n";
+    // std::cout << lyapunovAvg << std::endl;
 }
 
 void App::step() {
@@ -172,26 +240,51 @@ void App::step() {
     // Step forward using new system state
     solver->iterate(system);
 
-    if (Lpendulum != nullptr) {
-        Lpendulum->update();
+    if (Lpend1 != nullptr) {
+        Lpend1->update();
     }
+    if (Lpend2 != nullptr) {
+        Lpend2->update();
+    }
+
+    // std::cout << system->calculateEnergy() << std::endl;
 }
 
 void App::render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    if (Lpendulum != nullptr) {
-        Lpendulum->render(renderer);
+    if (Lpend1 != nullptr) {
+        Lpend1->render(renderer);
     }
-    origin->render(renderer);
+    if (Lpend2 != nullptr) {
+        Lpend2->render(renderer);
+    }
+    if (origin != nullptr) {
+        origin->render(renderer);
+    }
     system->render(renderer);
     SDL_RenderPresent(renderer);
 }
 
 void App::cleanup() {
+    avg.close();
+    curr.close();
+
     delete solver;
     system->cleanup();
     delete system;
+    
+    if (origin != nullptr) {
+        delete origin;
+    }
+
+    if (Lpend1 != nullptr) {
+        delete Lpend1;
+    }
+
+    if (Lpend2 != nullptr) {
+        delete Lpend2;
+    }
 
     if (window != nullptr) {
         SDL_DestroyWindow(window);

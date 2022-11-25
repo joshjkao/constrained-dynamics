@@ -2,15 +2,20 @@
 #define DOUBLEPENDULUM_H
 
 #include "vector2d.h"
+#include <vector>
 #include <SDL2/SDL.h>
 
 class LagrangianDoublePendulum {
     public:
         LagrangianDoublePendulum();
         ~LagrangianDoublePendulum();
+        void setAngles(double, double);
+        void setMassRatio(double);
+        void clear();
 
         void update();
         void render(SDL_Renderer*);
+        std::vector<double> getState();
 
         double theta1 = -M_PI_2;
         double theta2 = -M_PI_2;
@@ -28,7 +33,7 @@ class LagrangianDoublePendulum {
         double m1=0.5;
         double m2=0.5;
 
-        double dt = .0001/3;
+        double dt = 1.0/60/500;
         double g = 9.8;
 
     private:
