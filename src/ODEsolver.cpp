@@ -15,7 +15,7 @@ void EulerSolver::start(System* system, double dt_) {
 
 void EulerSolver::iterate(System* system) {
     for (auto& o: system->objects) {
-        // o->acc = o->F / o->mass;
+        o->acc = o->F / o->mass;
         o->pos = o->pos + (o->vel * dt);
         o->vel = o->vel + (o->acc * dt);
     }

@@ -19,6 +19,7 @@ class Matrix {
 
         // Necessary math operations
         friend std::vector<double> multiply(const Matrix&, const std::vector<double>&);
+        friend std::vector<double> multiply(const Matrix&, const std::vector<double>&);
         friend Matrix multiply(const Matrix&, const Matrix&);
         friend Matrix multiply(const Matrix&, const double&);
 
@@ -27,6 +28,7 @@ class Matrix {
 
         // Operators
         friend std::vector<double> operator*(const Matrix&, const std::vector<double>&);
+        friend std::vector<double> operator*(const Matrix&, const std::vector<double*>&);
         friend Matrix operator*(const Matrix&, const Matrix&);
         friend Matrix operator*(const Matrix&, const double&);
         friend std::ostream& operator<<(std::ostream&, const Matrix&);

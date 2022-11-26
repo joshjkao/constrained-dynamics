@@ -37,6 +37,12 @@ std::ostream& operator<<(std::ostream& os, const std::vector<double>& A) {
     return os;
 }
 
+void addTo(std::vector<double*> L, std::vector<double> R) {
+    for (unsigned int i = 0; i < L.size(); ++i) {
+        *L[i] += R[i];
+    }
+}
+
 
 // System functions
 System::System() {
@@ -50,14 +56,14 @@ System::~System() {
 void System::addObject(Object* object) {
     objects.push_back(object);
 
-    Q.push_back(object->pos.x);
-    Q.push_back(object->pos.y);
-    Qdot.push_back(object->vel.x);
-    Qdot.push_back(object->vel.y);
-    Qddot.push_back(object->acc.x);
-    Qddot.push_back(object->acc.y);
-    Fext.push_back(object->F.x);
-    Fext.push_back(object->F.y);
+    Q.push_back(&object->pos.x);
+    Q.push_back(&object->pos.y);
+    Qdot.push_back(&object->vel.x);
+    Qdot.push_back(&object->vel.y);
+    Qddot.push_back(&object->acc.x);
+    Qddot.push_back(&object->acc.y);
+    Fext.push_back(&object->F.x);
+    Fext.push_back(&object->F.y);
 
     std::vector<double> newRow1;
     std::vector<double> newRow2;
@@ -111,20 +117,8 @@ double System::calculateEnergy() {
     return this->energy;
 }
 
-void System::updateState() {
-    for (int i = 0; i < n; ++i) {
-        Q[2*i] = objects[i]->pos.x;
-        Q[2*i+1] = objects[i]->pos.y;
-        Qdot[2*i] = objects[i]->vel.x;
-        Qdot[2*i+1] = objects[i]->vel.y;
-        Fext[2*i] = objects[i]->F.x;
-        Fext[2*i+1] = objects[i]->F.y;
-    }
-}
-
 void System::calculateJacobian() {
     if (constraints.size() == 0) return;
-    updateState();
     for (unsigned int i = 0; i < constraints.size(); ++i) {
         constraints[i]->addJacobian(J[i], Jdot[i]);
     }
@@ -134,13 +128,8 @@ void System::calculateJacobian() {
 void System::applyConstraintForces() {
     if (constraints.size() == 0) return;
     calculateJacobian();
-
-    Qddot = Minv*(Fext + (JT*((J*Minv*JT).gaussElim((Jdot*Qdot)*-1 - J*Minv*Fext))));
-    int ind = 0;
-    for (int i = 0; i < n; ++i) {
-        objects[i]->acc.x = Qddot[ind++];
-        objects[i]->acc.y = Qddot[ind++];
-    }
+    std::vector<double> lambda = (JT*((J*Minv*JT).gaussElim((Jdot*Qdot)*-1 - J*Minv*Fext)));
+    addTo(Fext, lambda);
 }
 
 void System::dump(std::ostream& os) {
@@ -187,6 +176,10 @@ void System::setMassRatio(std::vector<Object*>& objs, double ratio) {
     if (objs.size() != 2) return;
     objs[0]->mass = ratio;
     objs[1]->mass = 1;
+    for (unsigned int i = 0; i < objects.size(); ++i) {
+        Minv[2*i][2*i] = 1.0/objects[i]->mass;
+        Minv[2*i+1][2*i+1] = 1.0/objects[i]->mass;
+    }
 }
 
 void System::cleanup() {

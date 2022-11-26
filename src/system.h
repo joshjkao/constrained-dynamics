@@ -24,7 +24,6 @@ class System {
         void applyForce(Vector2d F_, Object* object);
         void render(SDL_Renderer*);
         double calculateEnergy();
-        void updateState();
         void calculateJacobian();
         void applyConstraintForces();
 
@@ -36,10 +35,10 @@ class System {
         std::vector<ForceGenerator*> generators;
         std::vector<Constraint*> constraints;
 
-        std::vector<double> Q;
-        std::vector<double> Qdot;
-        std::vector<double> Fext;
-        std::vector<double> Qddot;
+        std::vector<double*> Q;
+        std::vector<double*> Qdot;
+        std::vector<double*> Fext;
+        std::vector<double*> Qddot;
 
         Matrix Minv;
         Matrix J;

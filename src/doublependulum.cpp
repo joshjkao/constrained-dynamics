@@ -16,8 +16,8 @@ void LagrangianDoublePendulum::setAngles(double t1, double t2) {
 }
 
 void LagrangianDoublePendulum::setMassRatio(double ratio) {
-    m1 = ratio*0.5;
-    m2 = 0.5;
+    m1 = ratio;
+    m2 = 1;
 }
 
 void LagrangianDoublePendulum::clear() {

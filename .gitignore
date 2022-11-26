@@ -3,4 +3,6 @@
 .vscode/settings.json
 build/
 assets/
+Lpendplots/
+Cpendplots/
 *.csv

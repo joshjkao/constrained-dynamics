@@ -12,7 +12,7 @@ double dprev = 0;
 double lyapunovTot = 0;
 double lyapunovAvg = 0;
 int angle = 0;
-double massRatio = 0.01;
+double massRatio = 1;
 long updates = 0;
 Vector2d testvec(0,0);
 Object* origin = nullptr;
@@ -69,16 +69,18 @@ bool App::init(const char* title, int xpos, int ypos, int width, int height, boo
 
     // Lpend1 = new LagrangianDoublePendulum();
     // Lpend2 = new LagrangianDoublePendulum();
-    // Lpend1->setAngles(90, 90);
-    // Lpend1->setMassRatio(1);
-    // Lpend2->setAngles(90 + 0.003, 90);
-    // Lpend2->setMassRatio(1);
+    // Lpend1->setAngles(0, 0);
+    // Lpend1->setMassRatio(massRatio);
+    // Lpend2->setAngles(0, 0);
+    // Lpend2->setMassRatio(massRatio + 0.01);
 
-    // Constraint Pendulum 1
     system = new System();
     origin = new ImmovableObject();
     origin->pos = Vector2d(5,1);
     origin->mass = 0.1;
+
+    
+    // Constraint Pendulum 1
 
     Object* pend1m1 = new Object();
     pend1m1->pos = Vector2d(4,1);
@@ -98,6 +100,7 @@ bool App::init(const char* title, int xpos, int ypos, int width, int height, boo
     Cpend1.push_back(pend1m2);
 
     // Constraint Pendulum 2
+    
     Object* pend2m1 = new Object();
     pend2m1->pos = Vector2d(4,1);
     pend2m1->mass = 0.5;
@@ -116,9 +119,10 @@ bool App::init(const char* title, int xpos, int ypos, int width, int height, boo
     Cpend2.push_back(pend2m2);
 
     system->setAngles(origin, Cpend1, 0, 0, 1, 1);
-    // system->setMassRatio(Cpend1, 1);
-    system->setAngles(origin, Cpend2, .003, 0, 1, 1);
-    // system->setMassRatio(Cpend2, 1);
+    system->setMassRatio(Cpend1, massRatio);
+    system->setAngles(origin, Cpend2, 0, 0, 1, 1);
+    system->setMassRatio(Cpend2, massRatio+0.01);
+
 
     for (auto& o: system->objects) {
         ForceGenerator* grav = new Gravity(o);
@@ -171,8 +175,8 @@ void App::update() {
             calculateLE();
         }
     }
-    if (updates == 3200) {
-        if (trials >= totalTrials) {
+    if (updates == 3000) {
+        if (massRatio >= 2) {
             isPaused = true;
             std::cout << "DONE" << std::endl;
             isRunning = false;
@@ -181,18 +185,28 @@ void App::update() {
             angle += 1;
             std::cout << "Testing case " << angle << std::endl;
             avg << angle << ", " << lyapunovAvg << "\n";
+            // Lpend1->clear();
+            // Lpend2->clear();
+            // Lpend1->setAngles(angle,0);
+            // Lpend2->setAngles(angle,0);
+            // Lpend1->setMassRatio(massRatio);
+            // Lpend2->setMassRatio(massRatio + 0.01);
+
             system->clear(Cpend1);
             system->setAngles(origin, Cpend1, angle, 0, 1,1);
-            // Lpend1->setMassRatio(massRatio);
+            system->setMassRatio(Cpend1, massRatio);
+            
             system->clear(Cpend2);
-            system->setAngles(origin, Cpend2, angle+0.003, 0, 1,1);
-            // Lpend2->setMassRatio(massRatio + 0.1);
+            system->setAngles(origin, Cpend2, angle, 0, 1,1);
+            system->setMassRatio(Cpend2, massRatio+0.01);
+            
             d0 = -1;
             dprev = 0;
             lyapunovTot = 0;
             lyapunovAvg = 0;
             updates = 0;
             ++trials;
+            render();
         }
     }
 
@@ -202,6 +216,8 @@ void App::update() {
 void App::calculateLE() {
     std::vector<double> state1 = system->getState(Cpend1);
     std::vector<double> state2 = system->getState(Cpend2);
+    // std::vector<double> state1 = Lpend1->getState();
+    // std::vector<double> state2 = Lpend2->getState();
     double temp = 0;
     for (unsigned int i = 0; i < state1.size(); ++i) {
         temp += pow(state1[i] - state2[i], 2);
@@ -210,15 +226,15 @@ void App::calculateLE() {
     if (d0 == -1) {
         d0 = temp;
         dprev = temp;
-        curr << "Iterations, Lyapunov Exponent\n";
+        // curr << "Iterations, Lyapunov Exponent\n";
     }
     ++updates;
     double di = temp;
     double lyapunovCurr = log(di/d0);
     lyapunovTot += lyapunovCurr;
     lyapunovAvg = lyapunovTot / (updates);
-    curr << updates << ", ";
-    curr << lyapunovCurr << "\n";
+    // curr << updates << ", ";
+    // curr << lyapunovCurr << "\n";
     // std::cout << lyapunovAvg << std::endl;
 }
 

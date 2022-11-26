@@ -104,6 +104,19 @@ std::vector<double> multiply(const Matrix& A, const std::vector<double>& vec) {
     return solutions;
 }
 
+std::vector<double> multiply(const Matrix& A, const std::vector<double*>& vec) {
+    std::vector<double> solutions;
+    if (A.cols != vec.size()) throw std::invalid_argument("invalid matrix multiplication");
+    for (unsigned int i = 0; i < A.rows; ++i) {
+        double temp = 0;
+        for (unsigned int j = 0; j < A.cols; ++j) {
+            temp += A.matrix[i][j] * *vec[j];
+        }
+        solutions.push_back(temp);
+    }
+    return solutions;
+}
+
 Matrix multiply(const Matrix& A, const Matrix& B) {
     Matrix C;
     if (A.cols != B.rows) throw std::invalid_argument("invalid matrix multiplication");
@@ -135,6 +148,11 @@ Matrix multiply(const Matrix& A, const double& D) {
 
 std::vector<double>& Matrix::operator[](int index) {
     return matrix[index];
+}
+
+std::vector<double> operator*(const Matrix& A, const std::vector<double*>& vec) {
+    std::vector<double> solution = multiply(A, vec);
+    return solution;
 }
 
 std::vector<double> operator*(const Matrix& A, const std::vector<double>& vec) {
