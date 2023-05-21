@@ -19,6 +19,9 @@ class System {
         void clear(std::vector<Object*>&);
         void setAngles(Object*, std::vector<Object*>&, double, double, double, double);
         void setMassRatio(std::vector<Object*>&, double);
+        void setColor(std::vector<Object*>&, int, int, int, int);
+
+        Object* checkMouseCollision(int x, int y);
 
         void clearForces();
         void applyForce(Vector2d F_, Object* object);

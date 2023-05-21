@@ -11,9 +11,11 @@ class LagrangianDoublePendulum {
         ~LagrangianDoublePendulum();
         void setAngles(double, double);
         void setMassRatio(double);
+        void setColor(int, int, int, int);
         void clear();
 
         void update();
+        void drawDircle(SDL_Renderer*, int x, int y, int r);
         void render(SDL_Renderer*);
         std::vector<double> getState();
 
@@ -33,11 +35,16 @@ class LagrangianDoublePendulum {
         double m1=0.5;
         double m2=0.5;
 
-        double dt = 1.0/60/500;
+        double dt = 1.0/60/400;
         double g = 9.8;
 
     private:
         void updateVectors();
+
+        int R = 150;
+        int G = 150;
+        int B = 150;
+        int A = 255;
 };
 
 #endif

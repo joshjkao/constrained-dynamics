@@ -2,7 +2,7 @@
 #include <cmath>
 
 LagrangianDoublePendulum::LagrangianDoublePendulum() {
-    pivot = Vector2d(5, 1);
+    pivot = Vector2d(3.5, 1.5);
     updateVectors();
 }
 
@@ -13,6 +13,7 @@ LagrangianDoublePendulum::~LagrangianDoublePendulum() {
 void LagrangianDoublePendulum::setAngles(double t1, double t2) {
     theta1 = t1 * M_PI/180;
     theta2 = t2 * M_PI/180;
+    updateVectors();
 }
 
 void LagrangianDoublePendulum::setMassRatio(double ratio) {
@@ -42,19 +43,35 @@ void LagrangianDoublePendulum::update() {
     updateVectors();
 }
 
+void LagrangianDoublePendulum::setColor(int r, int g, int b, int a) {
+    R = r;
+    G = g;
+    B = b;
+    A = a;
+}
+
+void LagrangianDoublePendulum::drawDircle(SDL_Renderer* rend, int x, int y, int r) {
+    SDL_SetRenderDrawColor(rend, R, G, B, A);
+    for (int w = 0; w < r * 2; w++)
+    {
+        for (int h = 0; h < r * 2; h++)
+        {
+            int dx = r - w; // horizontal offset
+            int dy = r - h; // vertical offset
+            if ((dx*dx + dy*dy) <= (r * r))
+            {
+                SDL_RenderDrawPoint(rend, x + dx, y + dy);
+            }
+        }
+    }
+}
+
 void LagrangianDoublePendulum::render(SDL_Renderer* rend) {
-    SDL_Rect rect;
-    rect.x = string1.x*100-16*m1;
-    rect.y = string1.y*100-16*m1;
-    rect.w = 32*m1;
-    rect.h = 32*m1;
-    SDL_SetRenderDrawColor(rend, 150,150,150,255);
-    SDL_RenderFillRect(rend, &rect);
-    rect.x = string2.x*100-16*m2;
-    rect.y = string2.y*100-16*m2;
-    rect.w = 32*m2;
-    rect.h = 32*m2;
-    SDL_RenderFillRect(rend, &rect);
+    SDL_SetRenderDrawColor(rend, 133, 133, 133, 255);
+    SDL_RenderDrawLine(rend, pivot.x*100, pivot.y*100, string1.x*100, string1.y*100);
+    SDL_RenderDrawLine(rend, string1.x*100, string1.y*100, string2.x*100, string2.y*100);
+    drawDircle(rend, string1.x*100, string1.y*100, 16);
+    drawDircle(rend, string2.x*100, string2.y*100, 16);
 }
 
 void LagrangianDoublePendulum::updateVectors() {
@@ -66,7 +83,6 @@ void LagrangianDoublePendulum::updateVectors() {
 
 std::vector<double> LagrangianDoublePendulum::getState() {
     std::vector<double> result;
-
     result.push_back(m1);
     result.push_back(string1.x);
     result.push_back(r1 * cos(theta1) * theta1dot);

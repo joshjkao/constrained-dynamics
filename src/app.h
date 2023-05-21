@@ -6,6 +6,7 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include "system.h"
 #include "ODEsolver.h"
 #include "doublependulum.h"
@@ -15,11 +16,13 @@ class App {
         App();
         ~App();
         bool init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
+        bool systemSetup();
         void handleEvents();
         void update();
         void calculateLE();
         void step();
         void render();
+        void clearSystem();
         void cleanup();
         bool running();
 
@@ -29,8 +32,9 @@ class App {
         bool SDL_init();
 
         bool isRunning;
-        int iterationsPerFrame = 500;
-        bool isPaused = false;
+        int iterationsPerFrame = 400;
+        bool isPaused = true;
+        bool runTriple = false;
         SDL_Window* window;
 
         System* system = nullptr;
@@ -38,6 +42,8 @@ class App {
 
         std::ofstream avg;
         std::ofstream curr;
+
+        TTF_Font* font = nullptr;
 
 };
 

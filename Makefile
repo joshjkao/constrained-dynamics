@@ -6,12 +6,12 @@ SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJ_NAME = play
 INCLUDE_PATHS = -I include 
 LIBRARY_PATHS = -L lib
-LINKER_FLAGS = -lSDL2 -lSDL2_image
+LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 
 OBJS = $(BUILD_DIR)/app.o $(BUILD_DIR)/constraint.o $(BUILD_DIR)/doublependulum.o $(BUILD_DIR)/forcegenerator.o $(BUILD_DIR)/matrix.o \
 	$(BUILD_DIR)/object.o $(BUILD_DIR)/ODEsolver.o $(BUILD_DIR)/system.o $(BUILD_DIR)/texturemanager.o $(BUILD_DIR)/vector2d.o
 
-all: $(BUILD_DIR)/.dirstamp $(BUILD_DIR)/play
+all: $(BUILD_DIR)/.dirstamp $(BUILD_DIR)/play run
 $(BUILD_DIR)/play: $(BUILD_DIR)/app.o $(SRC_DIR)/main.cpp $(OBJS)
 	$(CC) $(CCFLAGS) $(LINKER_FLAGS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(OBJS)  $(SRC_DIR)/main.cpp -o $(BUILD_DIR)/$(OBJ_NAME)
 $(BUILD_DIR)/app.o: $(BUILD_DIR)/system.o $(BUILD_DIR)/ODEsolver.o $(BUILD_DIR)/doublependulum.o $(SRC_DIR)/app.cpp $(SRC_DIR)/app.h

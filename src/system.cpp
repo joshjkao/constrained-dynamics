@@ -101,8 +101,11 @@ void System::applyForce(Vector2d F_, Object* object) {
 }
 
 void System::render(SDL_Renderer* rend) {
+    for (auto& c: constraints) {
+        c->render(rend);
+    }
     for (auto& o: objects) {
-        o->render(rend);
+        o->renderCircle(rend);
     }
 }
 
@@ -165,11 +168,14 @@ void System::clear(std::vector<Object*>& objs) {
 }
 
 void System::setAngles(Object* origin, std::vector<Object*>& objs, double theta1, double theta2, double r1, double r2) {
-    if (objs.size() != 2) return;
+    if (!(objs.size() == 2 || objs.size() == 3)) return;
     objs[0]->pos.x = origin->pos.x + r1 * sin(theta1 * M_PI/180);
     objs[0]->pos.y = origin->pos.y + r1 * cos(theta1 * M_PI/180);
     objs[1]->pos.x = objs[0]->pos.x + r2 * sin(theta2 * M_PI/180);
     objs[1]->pos.y = objs[0]->pos.y + r2 * cos(theta2 * M_PI/180);
+    if (objs.size() == 3) {
+        objs[2]->pos = objs[1]->pos + Vector2d(0, 1);
+    }
 }
 
 void System::setMassRatio(std::vector<Object*>& objs, double ratio) {
@@ -180,6 +186,21 @@ void System::setMassRatio(std::vector<Object*>& objs, double ratio) {
         Minv[2*i][2*i] = 1.0/objects[i]->mass;
         Minv[2*i+1][2*i+1] = 1.0/objects[i]->mass;
     }
+}
+
+void System::setColor(std::vector<Object*>& objs, int r, int g, int b, int a) {
+    for (auto& o: objs) {
+        o->setColor(r, g, b, a);
+    }
+}
+
+Object* System::checkMouseCollision(int x, int y) {
+    for (auto& o: objects) {
+        if (abs(x - o->pos.x*100) <= 32 && abs(y - o->pos.y*100) <= 32) {
+            return o;
+        }
+    }
+    return nullptr;
 }
 
 void System::cleanup() {

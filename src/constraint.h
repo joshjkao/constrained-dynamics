@@ -1,6 +1,7 @@
 #ifndef CONSTRAINT_H
 #define CONSTRAINT_H
 #include "object.h"
+#include <SDL2/SDL.h>
 
 class Constraint {
     public:
@@ -8,6 +9,7 @@ class Constraint {
         virtual ~Constraint() {}
 
         virtual void addJacobian(std::vector<double>&, std::vector<double>&) = 0;
+        virtual void render(SDL_Renderer* rend) = 0;
 };
 
 class DistanceConstraintFixed: public Constraint {
@@ -16,6 +18,7 @@ class DistanceConstraintFixed: public Constraint {
         ~DistanceConstraintFixed();
 
         void addJacobian(std::vector<double>&, std::vector<double>&);
+        void render(SDL_Renderer* rend);        
 
     private:
         Object* obj;
@@ -28,6 +31,7 @@ class DistanceConstraint: public Constraint {
         ~DistanceConstraint();
 
         void addJacobian(std::vector<double>&, std::vector<double>&);
+        void render(SDL_Renderer* rend);
 
     private:
         Object* obj1;
